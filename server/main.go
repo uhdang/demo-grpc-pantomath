@@ -7,6 +7,7 @@ import (
 
 	"github.com/demo-grpc-pantomath/api"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // main start a gRPC server and waits for connection
@@ -20,8 +21,17 @@ func main() {
 	// create a server instance
 	s := api.Server{}
 
+	// Create the TLS credentials
+	creds, err := credentials.NewServerTLSFromFile("cert/server.crt", "cert/server.key")
+	if err != nil {
+		log.Fatalf("could not load TLS keys: %s", err)
+	}
+
+	// Create an array of gRPC options with the credentials
+	opts := []grpc.ServerOption{grpc.Creds(creds)}
+
 	// create a gRPC server object
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(opts...)
 
 	// attach the Ping service to the server
 	api.RegisterPingServer(grpcServer, &s)
